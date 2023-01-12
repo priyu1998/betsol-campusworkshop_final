@@ -11,7 +11,7 @@ python >= 3.5
 ## Getting started
 
 ```bash
-### open Git bash any in working directory and run the following commands
+### open Git bash in any working directory and run the following commands
 git init
 git clone
 cd
@@ -24,7 +24,7 @@ flask run
 
 handlers:
 
-# Static files to /images/... to files in static/images/...
+# Static files to /images/... to files in static/images/... 
 
 - url: /img
   static_dir: static/img
