@@ -8,7 +8,7 @@ def fetch_todo() -> dict:
         A list of dictionaries
     """
     cursor = postgres.cursor()
-    cursor.execute("Select * from tasks;")
+    cursor.execute("Select * from tasks ORDER BY id ASC;")
     data = cursor.fetchall()
     postgres.commit()
     cursor.close()
@@ -50,24 +50,32 @@ def update_status_entry(task_id: int, text: str) -> None:
     cursor.close()
 
 
-def insert_new_task(text: str) -> int:
+def update_task_entry(task_id: int , text: str):
+    cursor = postgres.cursor()
+    query = "Update tasks set task = '{}' where id = {};".format(text,task_id)
+    cursor.execute(query)
+    postgres.commit()
+    cursor.close()
+
+
+def insert_new_task(text: str , id: int) -> int:
     """Insert new task to todo table.
     Args:
         text (str): Task description
     Returns: The task ID for the inserted entry
     """
     cursor = postgres.cursor()
-    query = "Insert Into tasks (task, status) VALUES ('{}', '{}');".format(
+    query = "Insert Into tasks (id,task, status) VALUES ({},'{}', '{}');".format(id,
         text, 'Todo')
     cursor.execute(query)
-    cursor.execute(" SELECT CURRVAL(pg_get_serial_sequence('tasks','id'));")
-    query_results = cursor.fetchall()
-    query_results = [x for x in query_results]
-    task_id = query_results[0][0]
+    # cursor.execute(" SELECT CURRVAL(pg_get_serial_sequence('tasks','id'));")
+    # query_results = cursor.fetchall()
+    # query_results = [x for x in query_results]
+    # task_id = query_results[0][0]
     postgres.commit()
     cursor.close()
 
-    return task_id
+    return query
 
 
 def remove_task_by_id(task_id: int) -> None:
@@ -80,6 +88,22 @@ def remove_task_by_id(task_id: int) -> None:
         cursor.close()
     except:
         print("test")
+
+
+def fetch_max_id() -> int:
+    try:
+        cursor = postgres.cursor()
+        query = "SELECT MAX(id) from tasks"
+        cursor.execute(query)
+        data = cursor.fetchall()
+        postgres.commit()
+        cursor.close()
+
+        return data
+    except:
+        print("Failed")
+
+    
 
 
 # #Creating a connection cursor

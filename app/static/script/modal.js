@@ -2,19 +2,20 @@ $(document).ready(function () {
     // example: https://getbootstrap.com/docs/4.2/components/modal/
     // show modal
     $('#task-modal').on('show.bs.modal', function (event) {
+        const modal = $(this)
+          modal.find('.form-control').val('');
+        
+    })
+
+
+    $('#edit-task-modal').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget) // Button that triggered the modal
         const taskID = button.data('source') // Extract info from data-* attributes
         const content = button.data('content') // Extract info from data-* attributes
 
         const modal = $(this)
-        if (taskID === 'New Task') {
-            modal.find('.modal-title').text(taskID)
-            $('#task-form-display').removeAttr('taskID')
-        } else {
             modal.find('.modal-title').text('Edit Task ' + taskID)
             $('#task-form-display').attr('taskID', taskID)
-        }
-
         if (content) {
             modal.find('.form-control').val(content);
         } else {
@@ -26,11 +27,53 @@ $(document).ready(function () {
         const tID = $('#task-form-display').attr('taskID');
         console.log($('#task-modal').find('.form-control').val())
         $.ajax({
-            type: 'POST',
-            url: tID ? '/edit/' + tID : '/create',
+            type:'GET',
+            url:'/fetch-max-id',
+            success: function(res){
+                let id=0;
+                if(res.length==0){
+                    id = 1;
+                }else{
+                    id = res;
+                    id++;
+                    console.log(id);
+
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/create',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: JSON.stringify({
+                        'description': $('#task-modal').find('.form-control').val(),
+                        'id': id
+                    }),
+                    success: function (res) {
+                        console.log(res.response)
+                        location.reload();
+                    },
+                    error: function () {
+                        console.log('Error');
+                    }
+                });
+
+            },error: function(){
+                console.log('Error');
+            }
+        })
+       
+    });
+    
+
+    $('#edit-task-btn').click(function () {
+        const tID = $('#task-form-display').attr('taskID');
+        console.log($('#edit-task-modal').find('.form-control').val())
+        $.ajax({
+            type: 'PATCH',
+            url: '/edit-task/' + tID,
             contentType: 'application/json;charset=UTF-8',
             data: JSON.stringify({
-                'description': $('#task-modal').find('.form-control').val()
+                'description': $('#edit-task-modal').find('.form-control').val()
             }),
             success: function (res) {
                 console.log(res.response)
@@ -41,12 +84,12 @@ $(document).ready(function () {
             }
         });
     });
-
+    
     
     $('.remove').click(function () {
         const remove = $(this)
         $.ajax({
-            type: 'POST',
+            type: 'DELETE',
             url: '/delete/' + remove.data('source'),
             success: function (res) {
                 console.log(res.response)
@@ -57,25 +100,33 @@ $(document).ready(function () {
             }
         });
     });
+
+
  $('.state').click(function () {
         let state = $(this)
         let tID = state.data('source')
-        let new_state
+        let new_state;
+
         if (state.text() === "Todo") {
             new_state = "In Progress"
         }
+        if(state.text() === "In Progress"){
+            new_state = "Completed"
+
+        }
     
         $.ajax({
-            type: 'POST',
-            url: '/edit/' + tID,
+            type: 'PATCH',
+            url: '/edit-status/' + tID,
             contentType: 'application/json;charset=UTF-8',
             data: JSON.stringify({
                 'status': new_state
             }),
             success: function (res) {
+                
                 console.log(res)
                 location.reload();
-            },
+            }, 
             error: function () {
                 console.log('Error');
             }
