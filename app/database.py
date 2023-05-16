@@ -2,6 +2,8 @@
 from app import postgres
 
 
+
+
 def fetch_todo() -> dict:
     """Reads all tasks listed in the todo table
     Returns:
